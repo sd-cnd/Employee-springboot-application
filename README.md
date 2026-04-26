@@ -109,6 +109,184 @@ Handles database operations.
 
 ---
 
+# Enhancements & Refactoring
+
+The project was further improved by incorporating better design practices, cleaner architecture, and modern Java features. Below are the key updates along with their rationale.
+
+---
+
+## 1. Introduction of DTO Layer
+
+### Change
+- Added `EmployeeDTO` to represent data transferred between layers.
+- Replaced direct exposure of the `Employee` entity in API responses.
+
+### Why
+- Prevents exposing internal database structure.
+- Improves security and flexibility.
+- Allows independent evolution of API and database schema.
+
+---
+
+## 2. Mapper Layer for Entity–DTO Conversion
+
+### Change
+- Introduced `EmployeeMapper` to handle conversions:
+    - `Employee → EmployeeDTO`
+    - `EmployeeDTO → Employee`
+
+### Why
+- Centralizes transformation logic.
+- Avoids duplication across service and controller layers.
+- Improves maintainability and readability.
+
+---
+
+## 3. Use of Functional Interface (Function) for Mapping
+
+### Change
+
+Implemented mapping using:
+
+Function<Employee, EmployeeDTO> toDTO = emp -> new EmployeeDTO(...);
+
+### Why
+- Demonstrates modern Java functional programming concepts.
+- Enables seamless integration with Stream API (`.map()`).
+- Encourages reusable and composable transformation logic.
+
+---
+
+## 4. Stream API for Data Transformation
+
+### Change
+
+Replaced traditional loops with Java Streams:
+
+repo.findAll()
+.stream()
+.map(EmployeeMapper.toDTO)
+.toList();
+
+### Why
+- Improves code readability and conciseness.
+- Enables functional-style data processing.
+- Reduces boilerplate code.
+
+---
+
+## 5. Standardized API Response Structure
+
+### Change
+
+Introduced a generic response wrapper:
+
+public class ApiResponse<T> {
+private int status;
+private String message;
+private T data;
+}
+
+### Why
+- Provides consistent API response format.
+- Makes it easier for clients to parse responses.
+- Supports flexible data types using generics.
+
+---
+
+## 6. Use of Generics (<T>) for Flexibility
+
+### Change
+- Implemented generic type `T` in `ApiResponse`.
+
+### Why
+- Allows reuse of the same response structure for:
+    - Single object (`EmployeeDTO`)
+    - Collections (`List<EmployeeDTO>`)
+    - Messages (`String`)
+- Ensures type safety without casting.
+
+---
+
+## 7. Improved Update Logic in Service Layer
+
+### Change
+
+Updated entity fields explicitly before saving:
+
+existing.setName(dto.getName());
+existing.setDepartment(dto.getDepartment());
+existing.setCareerPoints(dto.getCareerPoints());
+existing.setYearsOfExp(dto.getYearsOfExp());
+
+### Why
+- Ensures only intended fields are modified.
+- Prevents accidental overwriting of data.
+- Keeps business logic explicit and controlled.
+
+---
+
+## 8. Functional Mapping Usage in Service Layer
+
+### Change
+
+Used:
+
+EmployeeMapper.toDTO.apply(repo.save(existing));
+
+### Why
+- Demonstrates execution of functional interface via `.apply()`.
+- Maintains consistency with functional programming approach.
+
+---
+
+## 9. Adoption of Modern Java (.toList())
+
+### Change
+
+Replaced:
+
+.collect(Collectors.toList());
+
+with:
+
+.toList();
+
+### Why
+- Cleaner and more concise syntax (Java 16+).
+- Reduces verbosity.
+
+---
+
+## 10. Clean Separation of Concerns
+
+### Change
+Strengthened layer responsibilities:
+- Controller → request/response handling
+- Service → business logic
+- Repository → data access
+- Mapper → data transformation
+
+### Why
+- Improves scalability and maintainability.
+- Aligns with industry-standard architecture.
+- Makes testing and debugging easier.
+
+---
+
+## Summary
+
+These enhancements transition the project from a basic CRUD implementation to a more production-aligned backend structure by:
+
+- Introducing DTO abstraction
+- Applying functional programming concepts
+- Standardizing API responses
+- Improving code readability and maintainability
+
+The project now reflects modern Spring Boot development practices and is better suited for real-world applications and technical evaluations.
+
+---
+
 ## Postman Testing (Screenshots)
 
 ### Below are the API test results :-

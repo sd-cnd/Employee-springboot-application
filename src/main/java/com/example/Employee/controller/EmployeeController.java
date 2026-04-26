@@ -1,12 +1,13 @@
 package com.example.Employee.controller;
 
-import com.example.Employee.entity.Employee;
+import com.example.Employee.dto.ApiResponse;
+import com.example.Employee.dto.EmployeeDTO;
 import com.example.Employee.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/employees")
@@ -19,142 +20,62 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Employee emp) {
-
-        if (emp.getName() == null || emp.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Name is required")
-            );
-        }
-
-        if (emp.getDepartment() == null || emp.getDepartment().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Department is required")
-            );
-        }
-
-        if (emp.getCareerPoints() < 0) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Career points cannot be negative")
-            );
-        }
-
-        if (emp.getYearsOfExp() < 0) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Years of experience cannot be negative")
-            );
-        }
-
-        Employee saved = service.create(emp);
-
-        return ResponseEntity.status(201).body(
-                Map.of(
-                        "status", 201,
-                        "message", "Employee created successfully",
-                        "data", saved
-                )
-        );
+    public ResponseEntity<ApiResponse<EmployeeDTO>> create(@Valid @RequestBody EmployeeDTO dto) {
+        EmployeeDTO saved = service.create(dto);
+        return ResponseEntity.status(201)
+                .body(new ApiResponse<>(201, "Employee created successfully", saved));
     }
 
     @GetMapping
-    public ResponseEntity<?> getAll() {
-        List<Employee> list = service.getAll();
-
+    public ResponseEntity<ApiResponse<List<EmployeeDTO>>> getAll() {
         return ResponseEntity.ok(
-                Map.of(
-                        "status", 200,
-                        "data", list
-                )
+                new ApiResponse<>(200, "Success", service.getAll())
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        Employee emp = service.getById(id);
+    public ResponseEntity<ApiResponse<EmployeeDTO>> getById(@PathVariable Long id) {
+        EmployeeDTO emp = service.getById(id);
 
         if (emp != null) {
             return ResponseEntity.ok(
-                    Map.of(
-                            "status", 200,
-                            "data", emp
-                    )
+                    new ApiResponse<>(200, "Success", emp)
             );
         }
 
         return ResponseEntity.status(404).body(
-                Map.of(
-                        "status", 404,
-                        "message", "Employee not found with id: " + id
-                )
+                new ApiResponse<>(404, "Employee not found with id: " + id, null)
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Employee emp) {
-
-        if (emp.getName() == null || emp.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Name is required")
-            );
-        }
-
-        if (emp.getDepartment() == null || emp.getDepartment().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Department is required")
-            );
-        }
-
-        if (emp.getCareerPoints() < 0) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Career points cannot be negative")
-            );
-        }
-
-        if (emp.getYearsOfExp() < 0) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("status", 400, "message", "Years of experience cannot be negative")
-            );
-        }
-
-        Employee updated = service.update(id, emp);
+    public ResponseEntity<ApiResponse<EmployeeDTO>> update(@PathVariable Long id,
+                                                           @Valid @RequestBody EmployeeDTO dto) {
+        EmployeeDTO updated = service.update(id, dto);
 
         if (updated != null) {
             return ResponseEntity.ok(
-                    Map.of(
-                            "status", 200,
-                            "message", "Employee updated successfully",
-                            "data", updated
-                    )
+                    new ApiResponse<>(200, "Employee updated successfully", updated)
             );
         }
 
         return ResponseEntity.status(404).body(
-                Map.of(
-                        "status", 404,
-                        "message", "Employee not found with id: " + id
-                )
+                new ApiResponse<>(404, "Employee not found with id: " + id, null)
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         boolean deleted = service.delete(id);
 
         if (deleted) {
             return ResponseEntity.ok(
-                    Map.of(
-                            "status", 200,
-                            "message", "Employee deleted successfully"
-                    )
+                    new ApiResponse<>(200, "Employee deleted successfully", null)
             );
         }
 
         return ResponseEntity.status(404).body(
-                Map.of(
-                        "status", 404,
-                        "message", "Employee not found with id: " + id
-                )
+                new ApiResponse<>(404, "Employee not found with id: " + id, null)
         );
     }
 }
